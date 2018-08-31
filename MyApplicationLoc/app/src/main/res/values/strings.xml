@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Location</string>
+
+    <string name="next">NEXT</string>
+    <string name="skip">SKIP</string>
+    <string name="start">GOT IT</string>
+
+    <string name="slide_1_title">Welcome and Lets Explore Options!</string>
+
+    <string name="slide_2_title">Locate your Device last known loaction</string>
+
+    <string name="slide_3_title">Lets get started</string>
+
+    <string name="no_support_title">Your device is not compatible for this application</string>
+
+    <string name="service_invalid"> Your device has invalid/inauthentic install of google play services. Please make sure you download Google Play Services from the Play Store</string>
+
+    <string name="my_home">My Home</string>
+
+    <string name="title_location_permission">Please enable GPS</string>
+
+    <string name="text_location_permission">Location must be turned on to proceed</string>
+
+    <string name="ok">OK</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_maps_new">Map</string>
+
+</resources>

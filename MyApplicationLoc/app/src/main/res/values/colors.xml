@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="colorPrimary">#FFC107</color>
+  <color name="colorPrimaryDark">#FFA000</color>
+  <color name="colorAccent">#F44336</color>
+
+  <!-- Screens background color-->
+
+  <color name="welcome_bg">#20d2bb</color>
+
+  <!-- circle fill color-->
+  <color name="circle_fill">#A9D0F5</color>
+
+  <!-- dots inactive colors -->
+  <color name="dot_dark">#0B3B39</color>
+
+  <!-- dots active colors -->
+  <color name="dot_light">#088A85</color>
+
+
+</resources>
