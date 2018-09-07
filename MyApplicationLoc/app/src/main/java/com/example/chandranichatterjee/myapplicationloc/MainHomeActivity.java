@@ -11,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -27,18 +29,23 @@ import android.os.Bundle;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -63,14 +70,16 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.sqisland.tutorial.recipes.R;
 
+import java.net.URI;
+
 public class MainHomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks
         , GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    Button btnMenu;
+    Button btnMenu, cancel, go;
     DrawerLayout menu_layout;
     String profileName, profileEmail, photoURI;
     ImageView profile_pic;
-    LinearLayout ll_get_loc;
+    LinearLayout ll_get_loc, ll_get_dest;
     TextView profile_name, profile_email, tv_get_loc;
     private ActionBarDrawerToggle mDrawerToggle;
     private FusedLocationProviderApi fusedLocationProviderApi;
@@ -80,16 +89,17 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     private GoogleMap mGoogleMap;
     LocationRequest locationRequest;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-    private static final int REQUEST_CHECK_SETTINGS = 33;
-    private static final int REQUEST_PERMISSIONS_LAST_LOCATION_REQUEST_CODE = 34;
-    private static final int REQUEST_PERMISSIONS_CURRENT_LOCATION_REQUEST_CODE = 35;
-    protected static long MIN_UPDATE_INTERVAL = 30 * 1000;
     private LocationManager locationManager;
     private boolean GpsStatus;
     private ProgressDialog loading;
     int started = 0;
     int back = 0;
     int reload = 0;
+    int loc = 0;
+    int dest = 0;
+    VideoView video_view;
+    Uri uri;
+    EditText et_src, et_dest;
 
 
     @Override
@@ -107,70 +117,76 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
         }
 
         btnMenu = (Button) findViewById(R.id.btnMenu);
+        video_view = (VideoView) findViewById(R.id.video_view);
+        uri = Uri.parse("android.resource://com.example.chandranichatterjee.myapplicationloc/" + R.raw.loc4);
+        video_view.setVideoURI(uri);
+        video_view.start();
+        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                video_view.start();
+            }
+        });
+
         menu_layout = (DrawerLayout) findViewById(R.id.menu_layout);
         menu_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
         menu_layout.closeDrawer(Gravity.LEFT);
 
-        tv_get_loc = (TextView) findViewById(R.id.tv_get_loc);
         ll_get_loc = (LinearLayout) findViewById(R.id.ll_get_loc);
+        ll_get_dest = (LinearLayout) findViewById(R.id.ll_get_dest);
+        // ll_get_dest.setVisibility(View.GONE);
 
-        Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View dest_dialog = inflater.inflate(R.layout.dest_dialog, null, false);
+
+        final Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
         ll_get_loc.startAnimation(animFadeIn);
+        final Animation animFadeIn1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in_new);
+        ll_get_dest.startAnimation(animFadeIn1);
+
+
+        Animation animBlink = new AlphaAnimation(0.0f, 1.0f);
+        animBlink.setDuration(50);
+        animBlink.setStartOffset(20);
+        animBlink.setRepeatMode(Animation.REVERSE);
+        animBlink.setRepeatCount(Animation.INFINITE);
+
+        ll_get_dest.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                dest = 1;
+
+                final AlertDialog alertDialog = new AlertDialog.Builder(MainHomeActivity.this)
+                        .setTitle("Find you destination")
+                        .setView(dest_dialog)
+                        .setCancelable(false)
+                        .setIcon(R.drawable.your_dest_dia)
+                        .create();
+
+                alertDialog.show();
+
+                et_src = (EditText) dest_dialog.findViewById(R.id.et_src);
+                et_dest = (EditText) dest_dialog.findViewById(R.id.et_dest);
+                cancel = (Button) dest_dialog.findViewById(R.id.cancel);
+                go = (Button) dest_dialog.findViewById(R.id.go);
+
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        alertDialog.dismiss();
+                    }
+                });
+
+            }
+        });
 
         ll_get_loc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
+                loc = 1;
                 fusedLocationProviderApi = LocationServices.FusedLocationApi;
                 checkLocationPermission();
-//                if (checkLocationPermission()) {
-//                    //this block
-////                    if (turnOnLocation()) {
-//////                        if (!(googleApiClient != null || googleApiClient.isConnected())) {
-//////                            googleApiClient = new GoogleApiClient.Builder(MainHomeActivity.this)
-//////                                    .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
-//////                                    .addApi(LocationServices.API)
-//////                                    .addConnectionCallbacks(MainHomeActivity.this)
-//////                                    .addOnConnectionFailedListener(MainHomeActivity.this)
-//////                                    .build();
-//////                            googleApiClient.connect();
-//////                        }
-////                        if (googleApiClient == null) {
-////                            googleApiClient = new GoogleApiClient.Builder(MainHomeActivity.this)
-////                                    .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
-////                                    .addApi(LocationServices.API)
-////                                    .addConnectionCallbacks(MainHomeActivity.this)
-////                                    .addOnConnectionFailedListener(MainHomeActivity.this)
-////                                    .build();
-////                        }
-////                        if (!googleApiClient.isConnected()) {
-////                            googleApiClient.connect();
-////                            startLoadingDialogue();
-////                        }
-//////                    LocationRequest locationRequest = LocationRequest.create()
-//////                            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//////
-//////                    locationRequest.setInterval(5);
-//////                    locationRequest.setFastestInterval(1);
-//////                    LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, MainHomeActivity.this);
-//////                    location = fusedLocationProviderApi.getLastLocation(googleApiClient);
-////
-//////                    if (location != null) {
-//////
-//////                        //drawMarker(location);
-//////                        Intent i = new Intent(MainHomeActivity.this, MapsActivity.class);
-//////                        Bundle b = new Bundle();
-//////                        b.putDouble("lat", location.getLatitude());
-//////                        b.putDouble("lon", location.getLongitude());
-//////                        i.putExtras(b);
-//////                        startActivity(i);
-//////                    }
-////                    } else {
-////                        Toast.makeText(MainHomeActivity.this, "Loaction Must be turned on to proceed", Toast.LENGTH_LONG).show();
-////                    }
-//                    //this block
-//                }
             }
         });
 
@@ -179,6 +195,13 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                     @Override
                     public void onDrawerSlide(View drawerView, float slideOffset) {
                         // Respond when the drawer's position changes
+                        video_view.start();
+                        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mp) {
+                                video_view.start();
+                            }
+                        });
                     }
 
                     @Override
@@ -197,6 +220,13 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
 
                         profile_name.setText(profileName);
                         profile_email.setText(profileEmail);
+                        video_view.start();
+                        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mp) {
+                                video_view.start();
+                            }
+                        });
 
                     }
 
@@ -205,11 +235,26 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                         // Respond when the drawer is closed
                         drawerView.clearFocus();
                         drawerView.setPressed(false);
+                        video_view.start();
+                        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mp) {
+                                video_view.start();
+                            }
+                        });
+
                     }
 
                     @Override
                     public void onDrawerStateChanged(int newState) {
                         // Respond when the drawer motion state changes
+                        video_view.start();
+                        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mp) {
+                                video_view.start();
+                            }
+                        });
                     }
                 }
         );
@@ -219,16 +264,27 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
 
             @Override
             public void onDrawerClosed(View drawerView) {
-                // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
                 super.onDrawerClosed(drawerView);
+                video_view.start();
+                video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        video_view.start();
+                    }
+                });
             }
 
             @Override
             public void onDrawerOpened(View drawerView) {
-                // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
                 super.onDrawerOpened(drawerView);
+                video_view.start();
+                video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        video_view.start();
+                    }
+                });
             }
-
         };
         menu_layout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
@@ -249,27 +305,15 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                         menu_layout.openDrawer(Gravity.LEFT);
                     }
                 }
-
             }
         });
-
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        // set item as selected to persist highlight
-                        //menuItem.setChecked(true);
-
-
-                        // close drawer when item is tapped
                         menu_layout.closeDrawers();
-
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
-
-
                         return true;
                     }
                 });
@@ -353,16 +397,6 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                             == PackageManager.PERMISSION_GRANTED) {
 
                         if (turnOnLocation()) {
-
-//                        if (!(googleApiClient != null && googleApiClient.isConnected())) {
-                            //if (googleApiClient == null || !(googleApiClient.isConnected())) {
-//                            googleApiClient = new GoogleApiClient.Builder(this)
-//                                    .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
-//                                    .addApi(LocationServices.API)
-//                                    .addConnectionCallbacks(this)
-//                                    .addOnConnectionFailedListener(this)
-//                                    .build();
-//                            googleApiClient.connect();
                             if (googleApiClient == null) {
                                 googleApiClient = new GoogleApiClient.Builder(this)
                                         .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
@@ -375,27 +409,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                                 googleApiClient.connect();
                                 startLoadingDialogue();
                             }
-                            // }
-                            //commented
-//                            LocationRequest locationRequest = LocationRequest.create()
-//                                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//                            locationRequest.setInterval(5);
-//                            locationRequest.setFastestInterval(1);
-//                            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-//
-//                            location = fusedLocationProviderApi.getLastLocation(googleApiClient);
                         }
-//                         else {
-//                            new AlertDialog.Builder(this)
-//                                    .setTitle("Sorry!!")
-//                                    .setMessage(getString(R.string.text_location_permission))
-//                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//                                        @Override
-//                                        public void onClick(DialogInterface dialogInterface, int i) {
-//                                        }
-//                                    })
-//                                    .show();
-//                        }
                     }
 
 
@@ -410,8 +424,6 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                             })
                             .show();
                 }
-
-
             }
             return;
         }
@@ -437,18 +449,6 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             } else {
                 return super.dispatchTouchEvent(event);
             }
-//        } else if (event.getAction() == MotionEvent.ACTION_DOWN && isOutSideClicked) {
-//            isOutSideClicked = false;
-//            return super.dispatchTouchEvent(event);
-//        } else if (event.getAction() == MotionEvent.ACTION_MOVE && isOutSideClicked) {
-//            return super.dispatchTouchEvent(event);
-//        }
-//
-//        if (isOutSideClicked) {
-//            //make http call/db request
-//            Toast.makeText(this, "Hello..", Toast.LENGTH_SHORT).show();
-//        }
-//        return super.dispatchTouchEvent(event);
         }
 
         return super.dispatchTouchEvent(event);
@@ -469,28 +469,9 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
         location = LocationServices.FusedLocationApi.getLastLocation(
                 googleApiClient);
 
-        loadLocation();
-
-//        if (loading != null && loading.isShowing()) {
-//            loading.dismiss();
-//            loading.cancel();
-//        }
-//
-//        if (location != null) {
-//
-//            //drawMarker(location);
-//            Intent i = new Intent(MainHomeActivity.this, MapsActivityNew.class);
-//            Bundle b = new Bundle();
-//            b.putDouble("lat", location.getLatitude());
-//            b.putDouble("lon", location.getLongitude());
-//            i.putExtras(b);
-//            back = 1;
-//            googleApiClient.disconnect();
-//            startActivity(i);
-//        } else {
-//            Toast.makeText(this, "Sorry Location can not be loaded. Please try again later", Toast.LENGTH_LONG).show();
-//        }
-
+        if (loc == 1) {
+            loadLocation();
+        }
     }
 
     private void loadLocation() {
@@ -512,11 +493,11 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             googleApiClient.disconnect();
             startActivity(i);
         } else {
-            if (reload == 0){
-                reload ++;
+            if (reload == 0) {
+                reload++;
                 loadLocation();
             }
-           // else
+            // else
             //Toast.makeText(this, "Sorry Location can not be loaded. Please try again later", Toast.LENGTH_LONG).show();
         }
     }
@@ -534,28 +515,33 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     protected void onStart() {
         super.onStart();
+        video_view.start();
+        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                video_view.start();
+            }
+        });
+
         if (back != 1) {
-        if (started == 1) {
-            if (googleApiClient == null) {
-                googleApiClient = new GoogleApiClient.Builder(this)
-                        .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
-                        .addApi(LocationServices.API)
-                        .addConnectionCallbacks(this)
-                        .addOnConnectionFailedListener(this)
-                        .build();
+            if (started == 1) {
+                if (googleApiClient == null) {
+                    googleApiClient = new GoogleApiClient.Builder(this)
+                            .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
+                            .addApi(LocationServices.API)
+                            .addConnectionCallbacks(this)
+                            .addOnConnectionFailedListener(this)
+                            .build();
+                }
+                if (!googleApiClient.isConnected()) {
+                    googleApiClient.connect();
+                    startLoadingDialogue();
+                }
             }
-            if (!googleApiClient.isConnected()) {
-                googleApiClient.connect();
-                startLoadingDialogue();
-            }
-        }
-    }
-    else {
+        } else {
             googleApiClient.disconnect();
         }
     }
-
-
 
 
     @Override
@@ -567,6 +553,15 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     protected void onPause() {
         super.onPause();
+
+        video_view.start();
+        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                video_view.start();
+            }
+        });
+
         if (back != 1) {
             if (started == 1) {
                 if (googleApiClient == null) {
@@ -588,23 +583,30 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     protected void onResume() {
         super.onResume();
+        video_view.start();
+        video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                video_view.start();
+            }
+        });
+
         if (back != 1) {
-        if (started == 1) {
-            if (googleApiClient == null) {
-                googleApiClient = new GoogleApiClient.Builder(this)
-                        .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
-                        .addApi(LocationServices.API)
-                        .addConnectionCallbacks(this)
-                        .addOnConnectionFailedListener(this)
-                        .build();
+            if (started == 1) {
+                if (googleApiClient == null) {
+                    googleApiClient = new GoogleApiClient.Builder(this)
+                            .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
+                            .addApi(LocationServices.API)
+                            .addConnectionCallbacks(this)
+                            .addOnConnectionFailedListener(this)
+                            .build();
+                }
+                if (!googleApiClient.isConnected()) {
+                    googleApiClient.connect();
+                    startLoadingDialogue();
+                }
             }
-            if (!googleApiClient.isConnected()) {
-                googleApiClient.connect();
-                startLoadingDialogue();
-            }
-        }
-    }
-    else{
+        } else {
             googleApiClient.disconnect();
         }
     }

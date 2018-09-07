@@ -69,4 +69,10 @@ public class MapsActivityNew extends FragmentActivity implements OnMapReadyCallb
 
         mMap.addCircle(circleOptions);
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }

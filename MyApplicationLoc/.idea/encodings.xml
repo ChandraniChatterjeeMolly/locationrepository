@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/app/src/main/assets/loc1.mp4" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/raw/loc1.mp4" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/raw/loc3.mp4" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/raw/loc4.mp4" charset="ISO-8859-1" />
+  </component>
+</project>
