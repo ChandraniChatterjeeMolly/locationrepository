@@ -26,6 +26,7 @@ dependencies {
     compile 'junit:junit:4.12'
     //compile 'com.android.support.constraint:constraint-layout:1.1.2'
 
+
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2') {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
@@ -34,7 +35,8 @@ dependencies {
     compile 'com.google.android.gms:play-services-auth:10.2.0'
     compile 'com.google.android.gms:play-services:10.2.0'
     compile 'com.google.android.gms:play-services-identity:10.2.0'
-    compile "com.google.android.gms:play-services-location:10.2.0"
+    compile 'com.google.android.gms:play-services-location:10.2.0'
+    compile 'com.google.android.gms:play-services-places:10.2.0'
     compile 'com.google.android.gms:play-services-maps:10.2.0'
     compile 'com.google.firebase:firebase-messaging:10.2.0'
     compile 'com.google.firebase:firebase-core:10.2.0'

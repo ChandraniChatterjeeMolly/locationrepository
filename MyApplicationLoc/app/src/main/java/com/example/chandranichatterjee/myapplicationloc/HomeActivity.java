@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -35,12 +36,16 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.O
     private final int RC_SIGN_IN = 2000;
     GoogleApiClient mGoogleApiClient;
     MySharedPreferences pref;
+    RelativeLayout rl_home;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_home);
+
+        rl_home = (RelativeLayout) findViewById(R.id.rl_home);
+        rl_home.setClickable(false);
         pref = new MySharedPreferences(this);
 
         pref.setFirstLogin(false);

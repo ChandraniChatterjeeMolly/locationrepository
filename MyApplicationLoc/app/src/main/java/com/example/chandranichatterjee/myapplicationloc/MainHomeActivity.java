@@ -1,19 +1,19 @@
 package com.example.chandranichatterjee.myapplicationloc;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,24 +27,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.content.res.AppCompatResources;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
@@ -52,25 +48,16 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.chandranichatterjee.myapplicationloc.util.CircleTransform;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.sqisland.tutorial.recipes.R;
 
-import java.net.URI;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class MainHomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks
         , GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -95,11 +82,15 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     int started = 0;
     int back = 0;
     int reload = 0;
+    int reload1 = 0;
     int loc = 0;
     int dest = 0;
     VideoView video_view;
     Uri uri;
     EditText et_src, et_dest;
+    double latloc,longloc;
+    private ImageView img_src;
+    String destPlc;
 
 
     @Override
@@ -144,32 +135,59 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
         final Animation animFadeIn1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in_new);
         ll_get_dest.startAnimation(animFadeIn1);
 
-
-        Animation animBlink = new AlphaAnimation(0.0f, 1.0f);
+        final Animation animBlink = new AlphaAnimation(0.0f, 1.0f);
         animBlink.setDuration(50);
         animBlink.setStartOffset(20);
         animBlink.setRepeatMode(Animation.REVERSE);
         animBlink.setRepeatCount(Animation.INFINITE);
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MainHomeActivity.this);
+        builder.setTitle("Find you destination")
+                .setView(dest_dialog)
+                .setCancelable(false)
+                .setIcon(R.drawable.your_dest_dia)
+                .create();
+
+        final AlertDialog alertDialog = builder.create();
 
         ll_get_dest.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 dest = 1;
-
-                final AlertDialog alertDialog = new AlertDialog.Builder(MainHomeActivity.this)
-                        .setTitle("Find you destination")
-                        .setView(dest_dialog)
-                        .setCancelable(false)
-                        .setIcon(R.drawable.your_dest_dia)
-                        .create();
-
                 alertDialog.show();
 
                 et_src = (EditText) dest_dialog.findViewById(R.id.et_src);
                 et_dest = (EditText) dest_dialog.findViewById(R.id.et_dest);
                 cancel = (Button) dest_dialog.findViewById(R.id.cancel);
                 go = (Button) dest_dialog.findViewById(R.id.go);
+                img_src = (ImageView) dest_dialog.findViewById(R.id.img_src);
+
+                if (et_src.getText().toString() == null || et_src.getText().toString().isEmpty()) {
+                    img_src.setAnimation(animBlink);
+                }
+
+                et_src.setSingleLine(true);
+                et_src.setMarqueeRepeatLimit(-1);
+                et_dest.setSingleLine(true);
+                et_dest.setMarqueeRepeatLimit(-1);
+
+                fusedLocationProviderApi = LocationServices.FusedLocationApi;
+                checkLocationPermission();
+
+//                Handler handler = new Handler(Looper.getMainLooper());
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        latloc = location.getLatitude();
+//                        longloc = location.getLongitude();
+//                        String strplc = getAddressFromLocation(latloc,longloc);
+//                        et_src.setText(strplc);
+//                        img_src.clearAnimation();
+//                    }
+//                },5000);
+
+
 
                 cancel.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -178,8 +196,19 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                     }
                 });
 
+                et_dest.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = new Intent(MainHomeActivity.this,ActivityPlaces.class);
+                        startActivity(i);
+                    }
+                });
+
             }
         });
+
+
+
 
         ll_get_loc.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -366,21 +395,24 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             //}
             return false;
         } else {
-            if (googleApiClient == null) {
-                googleApiClient = new GoogleApiClient.Builder(this)
-                        .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
-                        .addApi(LocationServices.API)
-                        .addConnectionCallbacks(this)
-                        .addOnConnectionFailedListener(this)
-                        .build();
-            }
-            if (!googleApiClient.isConnected()) {
-                startLoadingDialogue();
-                googleApiClient.connect();
+            if (turnOnLocation()) {
+                if (googleApiClient == null) {
+                    googleApiClient = new GoogleApiClient.Builder(this)
+                            .enableAutoManage(MainHomeActivity.this, MainHomeActivity.this)
+                            .addApi(LocationServices.API)
+                            .addConnectionCallbacks(this)
+                            .addOnConnectionFailedListener(this)
+                            .build();
+                }
+                if (!googleApiClient.isConnected()) {
+                    startLoadingDialogue();
+                    googleApiClient.connect();
 
+                }
+                return true;
             }
-            return true;
         }
+        return false;
     }
 
     @Override
@@ -469,6 +501,16 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
         location = LocationServices.FusedLocationApi.getLastLocation(
                 googleApiClient);
 
+        if (loading != null && loading.isShowing()) {
+            loading.dismiss();
+            loading.cancel();
+        }
+
+        if (dest == 1) {
+            loadDest();
+        }
+
+
         if (loc == 1) {
             loadLocation();
         }
@@ -496,6 +538,31 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             if (reload == 0) {
                 reload++;
                 loadLocation();
+            }
+            // else
+            //Toast.makeText(this, "Sorry Location can not be loaded. Please try again later", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void loadDest() {
+
+        if (loading != null && loading.isShowing()) {
+            loading.dismiss();
+            loading.cancel();
+        }
+
+        if (location != null) {
+
+            latloc = location.getLatitude();
+            longloc = location.getLongitude();
+            String strplc = getAddressFromLocation(latloc,longloc);
+            et_src.setText(strplc);
+            img_src.clearAnimation();
+            googleApiClient.disconnect();
+        } else {
+            if (reload1 == 0) {
+                reload1++;
+                loadDest();
             }
             // else
             //Toast.makeText(this, "Sorry Location can not be loaded. Please try again later", Toast.LENGTH_LONG).show();
@@ -656,9 +723,10 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                 retres = true;
             } else {
                 started = 1;
-                //del later
+
                 Intent intent1 = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent1);
+               // startActivity(intent1);
+                startActivityForResult(intent1, RESULT_OK);
                 //turnOnLocation();
                 //
             }
@@ -668,6 +736,46 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
         }
 
     }
+    private String getAddressFromLocation(double latitude,double longitude){
 
+        Geocoder geocoder = new Geocoder(this, Locale.ENGLISH);
+        String strplace;
 
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+
+            if (addresses.size() > 0) {
+                android.location.Address fetchedAddress = addresses.get(0);
+                StringBuilder strAddress = new StringBuilder();
+                for (int i = 0; i <= fetchedAddress.getMaxAddressLineIndex(); i++) {
+                    strAddress.append(fetchedAddress.getAddressLine(i)).append(" ");
+                }
+
+                strplace = strAddress.toString();
+                return strplace;
+
+            } else {
+                return "Searching Current Address";
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Could not get address..!";
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        turnOnLocation();
+
+        if (requestCode == 1000){
+            if (data != null) {
+                if (data.getExtras() != null) {
+                    destPlc = data.getExtras().getString("DEST_PLACE");
+                    et_dest.setText(""+destPlc);
+                }
+            }
+        }
+    }
 }

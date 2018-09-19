@@ -33,7 +33,7 @@
         <activity android:name="com.example.chandranichatterjee.myapplicationloc.HomeActivity" />
         <activity android:name="com.example.chandranichatterjee.myapplicationloc.NoSupportActivity" />
         <activity android:name="com.example.chandranichatterjee.myapplicationloc.MainHomeActivity" />
-        <!--<activity android:name="com.example.chandranichatterjee.myapplicationloc.MapsActivity" />-->
+        <!-- <activity android:name="com.example.chandranichatterjee.myapplicationloc.MapsActivity" /> -->
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -48,7 +48,8 @@
 
         <activity
             android:name="com.example.chandranichatterjee.myapplicationloc.MapsActivityNew"
-            android:label="@string/title_activity_maps_new"></activity>
+            android:label="@string/title_activity_maps_new" />
+        <activity android:name="com.example.chandranichatterjee.myapplicationloc.ActivityPlaces"></activity>
     </application>
 
 </manifest>
