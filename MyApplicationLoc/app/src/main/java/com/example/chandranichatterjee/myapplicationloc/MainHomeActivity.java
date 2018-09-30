@@ -1,6 +1,8 @@
 package com.example.chandranichatterjee.myapplicationloc;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,11 +43,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.chandranichatterjee.myapplicationloc.util.CircleTransform;
+import com.example.chandranichatterjee.myapplicationloc.util.LocUtil;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderApi;
@@ -79,6 +83,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     private LocationManager locationManager;
     private boolean GpsStatus;
     private ProgressDialog loading;
+    private NotificationManager notificationManager;
     int started = 0;
     int back = 0;
     int reload = 0;
@@ -154,58 +159,50 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
 
             @Override
             public void onClick(View v) {
-                dest = 1;
-                alertDialog.show();
+                if (LocUtil.isNetworkAvailable(MainHomeActivity.this)) {
+                    dest = 1;
+                    alertDialog.show();
 
-                et_src = (EditText) dest_dialog.findViewById(R.id.et_src);
-                et_dest = (EditText) dest_dialog.findViewById(R.id.et_dest);
-                cancel = (Button) dest_dialog.findViewById(R.id.cancel);
-                go = (Button) dest_dialog.findViewById(R.id.go);
-                img_src = (ImageView) dest_dialog.findViewById(R.id.img_src);
+                    et_src = (EditText) dest_dialog.findViewById(R.id.et_src);
+                    et_dest = (EditText) dest_dialog.findViewById(R.id.et_dest);
+                    cancel = (Button) dest_dialog.findViewById(R.id.cancel);
+                    go = (Button) dest_dialog.findViewById(R.id.go);
+                    img_src = (ImageView) dest_dialog.findViewById(R.id.img_src);
 
-                if (et_src.getText().toString() == null || et_src.getText().toString().isEmpty()) {
-                    img_src.setAnimation(animBlink);
+                    if (et_src.getText().toString() == null || et_src.getText().toString().isEmpty()) {
+                        img_src.setAnimation(animBlink);
+                    }
+
+                    et_src.setSingleLine(true);
+                    et_src.setMarqueeRepeatLimit(-1);
+                    et_dest.setSingleLine(true);
+                    et_dest.setMarqueeRepeatLimit(-1);
+
+                    fusedLocationProviderApi = LocationServices.FusedLocationApi;
+                    checkLocationPermission();
+
+
+                    cancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            alertDialog.dismiss();
+                        }
+                    });
+
+                    et_dest.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = new Intent(MainHomeActivity.this, ActivityPlaces.class);
+                            startActivity(i);
+                        }
+                    });
+
+                }else {
+                    Toast.makeText(MainHomeActivity.this,"Please check your internet connnection and try again",Toast.LENGTH_SHORT).show();
                 }
 
-                et_src.setSingleLine(true);
-                et_src.setMarqueeRepeatLimit(-1);
-                et_dest.setSingleLine(true);
-                et_dest.setMarqueeRepeatLimit(-1);
-
-                fusedLocationProviderApi = LocationServices.FusedLocationApi;
-                checkLocationPermission();
-
-//                Handler handler = new Handler(Looper.getMainLooper());
-//                handler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        latloc = location.getLatitude();
-//                        longloc = location.getLongitude();
-//                        String strplc = getAddressFromLocation(latloc,longloc);
-//                        et_src.setText(strplc);
-//                        img_src.clearAnimation();
-//                    }
-//                },5000);
-
-
-
-                cancel.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        alertDialog.dismiss();
-                    }
-                });
-
-                et_dest.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent i = new Intent(MainHomeActivity.this,ActivityPlaces.class);
-                        startActivity(i);
-                    }
-                });
-
             }
-        });
+            });
 
 
 
@@ -213,9 +210,14 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
         ll_get_loc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loc = 1;
-                fusedLocationProviderApi = LocationServices.FusedLocationApi;
-                checkLocationPermission();
+                if (LocUtil.isNetworkAvailable(MainHomeActivity.this)) {
+                    loc = 1;
+                    fusedLocationProviderApi = LocationServices.FusedLocationApi;
+                    checkLocationPermission();
+                }
+                else {
+                    Toast.makeText(MainHomeActivity.this,"Please check your internet connnection and try again",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -224,6 +226,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                     @Override
                     public void onDrawerSlide(View drawerView, float slideOffset) {
                         // Respond when the drawer's position changes
+                        video_view.setVideoURI(uri);
                         video_view.start();
                         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
@@ -249,6 +252,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
 
                         profile_name.setText(profileName);
                         profile_email.setText(profileEmail);
+                        video_view.setVideoURI(uri);
                         video_view.start();
                         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
@@ -264,6 +268,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                         // Respond when the drawer is closed
                         drawerView.clearFocus();
                         drawerView.setPressed(false);
+                        video_view.setVideoURI(uri);
                         video_view.start();
                         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
@@ -277,6 +282,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
                     @Override
                     public void onDrawerStateChanged(int newState) {
                         // Respond when the drawer motion state changes
+                        video_view.setVideoURI(uri);
                         video_view.start();
                         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
@@ -294,6 +300,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
+                video_view.setVideoURI(uri);
                 video_view.start();
                 video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
@@ -306,6 +313,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+                video_view.setVideoURI(uri);
                 video_view.start();
                 video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
@@ -469,6 +477,8 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             menu_layout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            Intent home = new Intent(this,Welcome.class);
+            startActivity(home);
         }
     }
 
@@ -518,12 +528,23 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
 
     private void loadLocation() {
 
-        if (loading != null && loading.isShowing()) {
+        if (loading != null) {
             loading.dismiss();
             loading.cancel();
         }
 
         if (location != null) {
+
+            //Demo push notification
+            notificationManager = (NotificationManager) getSystemService(this.NOTIFICATION_SERVICE);
+            Notification notification = new Notification.Builder(getApplicationContext())
+                    .setContentTitle("Demo Notif")
+                    .setContentText("Your Location is detected")
+                    .setSmallIcon(R.drawable.your_pin)
+                    .build();
+            notification.flags = Notification.FLAG_AUTO_CANCEL;
+            notificationManager.notify(0,notification);
+            //
 
             //drawMarker(location);
             Intent i = new Intent(MainHomeActivity.this, MapsActivityNew.class);
@@ -582,6 +603,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     protected void onStart() {
         super.onStart();
+        video_view.setVideoURI(uri);
         video_view.start();
         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -607,6 +629,9 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             }
         } else {
             googleApiClient.disconnect();
+            if (loading!= null){
+                loading.dismiss();
+            }
         }
     }
 
@@ -620,7 +645,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     protected void onPause() {
         super.onPause();
-
+        video_view.setVideoURI(uri);
         video_view.start();
         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -650,6 +675,7 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     protected void onResume() {
         super.onResume();
+        video_view.setVideoURI(uri);
         video_view.start();
         video_view.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -679,42 +705,6 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private boolean turnOnLocation() {
-//        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-//        builder.setAlwaysShow(true);
-//        builder.build();
-//
-//        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
-//        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-//            @Override
-//            public void onResult(LocationSettingsResult result) {
-//                final Status status = result.getStatus();
-//                switch (status.getStatusCode()) {
-//                    case LocationSettingsStatusCodes.SUCCESS:
-//                        //Log.i(TAG, "All location settings are satisfied.");
-//                        retres = true;
-//                        break;
-//                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-//                        //Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings ");
-//
-//                        try {
-//                            // Show the dialog by calling startResolutionForResult(), and check the result
-//                            // in onActivityResult().
-//                            status.startResolutionForResult(MainHomeActivity.this, REQUEST_CHECK_SETTINGS);
-//                            retres  = true;
-//                        } catch (IntentSender.SendIntentException e) {
-//                            //Log.i(TAG, "PendingIntent unable to execute request.");
-//                            retres = false;
-//                        }
-//                        break;
-//                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-//                        //Log.i(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog not created.");
-//                        retres = false;
-//                        break;
-//                }
-//            }
-//        });
-//
-//        return  retres;
 
         try {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -778,4 +768,6 @@ public class MainHomeActivity extends AppCompatActivity implements GoogleApiClie
             }
         }
     }
+
+
 }

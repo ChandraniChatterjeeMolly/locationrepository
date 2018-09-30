@@ -17,7 +17,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.chandranichatterjee.myapplicationloc.util.LocUtil;
 import com.sqisland.tutorial.recipes.R;
 
 public class Welcome extends AppCompatActivity {
@@ -90,9 +92,13 @@ public class Welcome extends AppCompatActivity {
     }
 
     private void gotoHome() {
+        if(LocUtil.isNetworkAvailable(Welcome.this)){
+            Intent homeIntent = new Intent(this, HomeActivity.class);
+            startActivity(homeIntent);
+        }else {
+            Toast.makeText(Welcome.this,"Please check your internet connnection and try again",Toast.LENGTH_SHORT).show();
+        }
 
-        Intent homeIntent = new Intent(this, HomeActivity.class);
-        startActivity(homeIntent);
     }
 
     ViewPager.OnPageChangeListener viewPagerPageChangeListener = new ViewPager.OnPageChangeListener() {

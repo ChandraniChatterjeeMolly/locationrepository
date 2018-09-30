@@ -53,19 +53,19 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.O
             googleSignIn();
         }
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("hi").setTitle("hi")
-                .setPositiveButton("Impostazioni", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                        startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
-                    }
-                })
-                .setNegativeButton("Chiudi", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        System.exit(0);
-                    }
-                });
+//        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setMessage("hi").setTitle("hi")
+//                .setPositiveButton("Impostazioni", new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//
+//                        startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+//                    }
+//                })
+//                .setNegativeButton("Chiudi", new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//                        System.exit(0);
+//                    }
+//                });
     }
 
     private void googleSignIn() {

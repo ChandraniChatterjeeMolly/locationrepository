@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.sqisland.tutorial.recipes">
 
     <permission
@@ -12,16 +13,34 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_new"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <service
+            android:name="com.example.chandranichatterjee.myapplicationloc.notifications.MyFirebaseMessagingService"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.example.chandranichatterjee.myapplicationloc.notifications.MyFirebaseInstanceIDService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
 
         <activity android:name="com.example.chandranichatterjee.myapplicationloc.Welcome">
             <intent-filter>
@@ -49,7 +68,8 @@
         <activity
             android:name="com.example.chandranichatterjee.myapplicationloc.MapsActivityNew"
             android:label="@string/title_activity_maps_new" />
-        <activity android:name="com.example.chandranichatterjee.myapplicationloc.ActivityPlaces"></activity>
+        <activity android:name="com.example.chandranichatterjee.myapplicationloc.ActivityPlaces" />
+        <activity android:name="com.example.chandranichatterjee.myapplicationloc.TestActivity"></activity>
     </application>
 
 </manifest>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Location</string>
+
+    <string name="next">अगला</string>
+    <string name="skip">छोड़ें</string>
+    <string name="start">समझ गया</string>
+
+    <string name="slide_1_title">आपके लोकेशन एप्लिकेशन में आपका स्वागत है</string>
+
+    <string name="slide_2_title">अपने डिवाइस के अंतिम ज्ञात स्थान का पता लगाएं</string>
+
+    <string name="slide_3_title">आएँ शुरू करें</string>
+
+    <string name="no_support_title">आपका डिवाइस इस एप्लिकेशन के लिए संगत नहीं है</string>
+
+    <string name="service_invalid"> आपके डिवाइस में Google play सेवाओं का अमान्य / अनौपचारिक इंस्टॉल है। कृपया सुनिश्चित करें कि आप Play Store से Google Play सेवाएं डाउनलोड करते हैं</string>
+
+    <string name="my_home">मेरा Home</string>
+
+    <string name="title_location_permission">कृपया जीपीएस सक्षम करें</string>
+
+    <string name="text_location_permission">आगे बढ़ने के लिए लोकेशन सेटिंग्स चालू होना चाहिए</string>
+
+    <string name="ok">ठीक</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_maps_new">Map</string>
+
+    <!-- Textviews-->
+    <string name="Get_your_last_known_location">अपना अंतिम ज्ञात स्थान प्राप्त करें</string>
+    <string name="Find_Your_Destination">अपना गंतव्य खोजें</string>
+    <string name="Settings">सेटिंग्स</string>
+    <string name="About_Us">हमारे बारे में</string>
+    <string name="Contact_Us">हमसे संपर्क करें</string>
+
+
+</resources>

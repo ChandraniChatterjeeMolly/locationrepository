@@ -5,7 +5,7 @@
     <string name="skip">SKIP</string>
     <string name="start">GOT IT</string>
 
-    <string name="slide_1_title">Welcome and Lets Explore Options!</string>
+    <string name="slide_1_title">Welcome to your Location Application!</string>
 
     <string name="slide_2_title">Locate your Device last known loaction</string>
 
@@ -26,5 +26,12 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_maps_new">Map</string>
+
+    <!-- Textviews-->
+    <string name="Get_your_last_known_location">Get your last known location</string>
+    <string name="Find_Your_Destination">Find Your Destination</string>
+    <string name="Settings">Settings</string>
+    <string name="About_Us">About Us</string>
+    <string name="Contact_Us">Contact Us</string>
 
 </resources>
